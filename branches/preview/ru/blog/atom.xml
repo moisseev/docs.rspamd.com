@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://rspamd.com/ru/blog</id>
+    <id>https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog</id>
     <title>Rspamd Documentation Blog</title>
     <updated>2019-05-16T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://rspamd.com/ru/blog"/>
+    <link rel="alternate" href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog"/>
     <subtitle>Rspamd Documentation Blog</subtitle>
-    <icon>https://rspamd.com/ru/img/favicon.png</icon>
+    <icon>https://rspamd.com/docs.rspamd.com/branches/preview/ru/img/favicon.png</icon>
     <entry>
         <title type="html"><![CDATA[Rspamd Performance Measures]]></title>
-        <id>https://rspamd.com/ru/blog/rspamd-performance</id>
-        <link href="https://rspamd.com/ru/blog/rspamd-performance"/>
+        <id>https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance</id>
+        <link href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance"/>
         <updated>2019-05-16T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Preface]]></summary>
-        <content type="html"><![CDATA[<h2 class="anchor anchorWithStickyNavbar_LWe7" id="preface">Preface<a href="https://rspamd.com/ru/blog/rspamd-performance#preface" class="hash-link" aria-label="Прямая ссылка на Preface" title="Прямая ссылка на Preface">​</a></h2>
+        <content type="html"><![CDATA[<h2 class="anchor anchorWithStickyNavbar_LWe7" id="preface">Preface<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#preface" class="hash-link" aria-label="Прямая ссылка на Preface" title="Прямая ссылка на Preface">​</a></h2>
 <p>Rspamd has always been oriented on the performance but it was always quite hard to measure how fast it was as normally it runs <em>just fast enough</em>.</p>
 <p>However, I was recently offered to process <a href="https://www.abusix.ai/" target="_blank" rel="noopener noreferrer">Abusix Intelligence</a> feeds using Rspamd. These feeds are used to improve Rspamd fuzzy storage quality, to feed URLs and Emails to the DNS black lists provided by Rspamd project and used in SURBL module.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="problem-statement">Problem statement<a href="https://rspamd.com/ru/blog/rspamd-performance#problem-statement" class="hash-link" aria-label="Прямая ссылка на Problem statement" title="Прямая ссылка на Problem statement">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="problem-statement">Problem statement<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#problem-statement" class="hash-link" aria-label="Прямая ссылка на Problem statement" title="Прямая ссылка на Problem statement">​</a></h2>
 <p>The amount of data that required to be processing is huge - it is about 100 millions of messages per day.</p>
 <p>Here is an example to calculate connections count when processing these messages using Rspamd:</p>
 <div class="term">
@@ -32,7 +32,7 @@ $ rspamc stat | \
 </div>
 <!-- -->
 <p>It means that over 10 seconds Rspamd has to process around 15 thousands of messages which gives us a rate of <strong>1500 messages per second</strong>.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="rspamd-setup">Rspamd setup<a href="https://rspamd.com/ru/blog/rspamd-performance#rspamd-setup" class="hash-link" aria-label="Прямая ссылка на Rspamd setup" title="Прямая ссылка на Rspamd setup">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="rspamd-setup">Rspamd setup<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#rspamd-setup" class="hash-link" aria-label="Прямая ссылка на Rspamd setup" title="Прямая ссылка на Rspamd setup">​</a></h2>
 <p>The settings used to process this amount of messages are pretty similar to those that are provided by default.</p>
 <p>There is also some significant amount of home-crafted scripts written in Lua to provide the following functionality:</p>
 <ul>
@@ -48,7 +48,7 @@ $ rspamc stat | \
 <li>Stores messages in IMAP folders providing sorting, partitioning and sampling logic</li>
 <li>Doing various HTTP and Redis queries for servicing purposes</li>
 </ul>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="hardware">Hardware<a href="https://rspamd.com/ru/blog/rspamd-performance#hardware" class="hash-link" aria-label="Прямая ссылка на Hardware" title="Прямая ссылка на Hardware">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="hardware">Hardware<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#hardware" class="hash-link" aria-label="Прямая ссылка на Hardware" title="Прямая ссылка на Hardware">​</a></h2>
 <p>Now some words about hardware being used.</p>
 <p>Previously we have set the same setup on a small instance of <a href="https://web.archive.org/web/20190319181059/https://www.hetzner.com/dedicated-rootserver/ax60-ssd" target="_blank" rel="noopener noreferrer">AX-60</a> and it was loaded for around 80%. We have decided to move to a more powerful server to have some margin for processing more emails and doing some experiments.</p>
 <p>Hence, we now have an <a href="https://web.archive.org/web/20190319181053/https://www.hetzner.com/dedicated-rootserver/ax160-ssd" target="_blank" rel="noopener noreferrer">AX-160</a> AMD server rented in <a href="https://www.hetzner.com/" target="_blank" rel="noopener noreferrer">Hetzner</a>. This is quite a powerful machine and the current load pictures look like this one:</p>
@@ -89,7 +89,7 @@ MiB Swap:   4092.0 total,   3925.5 free,    166.5 used. 100018.6 avail Mem
 </div>
 <!-- -->
 <p>Rspamd is also being fed via proxy worker that runs on another host and performs initial data collection and emitting messages via the Internet providing transport encryption using HTTPCrypt. However, its CPU usage is quite negligible - it uses only a single CPU core by around 40% in average.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="results-analytics">Results analytics<a href="https://rspamd.com/ru/blog/rspamd-performance#results-analytics" class="hash-link" aria-label="Прямая ссылка на Results analytics" title="Прямая ссылка на Results analytics">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="results-analytics">Results analytics<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#results-analytics" class="hash-link" aria-label="Прямая ссылка на Results analytics" title="Прямая ссылка на Results analytics">​</a></h2>
 <p>As you can see, this machine runs also <a href="https://clickhouse.yandex/" target="_blank" rel="noopener noreferrer">Clickhouse</a>, Redis, own recursive resolver (Unbound), and it still has <strong>~80% idle</strong> processing these <strong>1500 messages per second</strong>.</p>
 <p>If we look at the performance counters by attaching to some of the worker processes, we would see the following picture:</p>
 <div class="term">
@@ -155,7 +155,7 @@ perform full gc cycle; memory stats: 58.66MiB allocated, 62.01MiB active, 6.08Mi
 </div>
 <!-- -->
 <p>As you can see, full GC iter takes quite a significant time. However, it still keeps Lua memory usage sane. The ideas behind this GC mode have been taken from the generational GC idea in <a href="http://wiki.luajit.org/New-Garbage-Collector#gc-algorithms_generational-gc" target="_blank" rel="noopener noreferrer">LuaJIT Wiki</a>.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="resulting-graphs">Resulting graphs<a href="https://rspamd.com/ru/blog/rspamd-performance#resulting-graphs" class="hash-link" aria-label="Прямая ссылка на Resulting graphs" title="Прямая ссылка на Resulting graphs">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="resulting-graphs">Resulting graphs<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#resulting-graphs" class="hash-link" aria-label="Прямая ссылка на Resulting graphs" title="Прямая ссылка на Resulting graphs">​</a></h2>
 <p>Here are some UI captures taken from a previous machine:</p>
 <img decoding="async" loading="lazy" width="75%" class="img-fluid img_ev3q" src="https://rspamd.com/img/perf_webui1.png">
 <img decoding="async" loading="lazy" width="75%" class="img-fluid img_ev3q" src="https://rspamd.com/img/perf_webui2.png">
@@ -190,7 +190,7 @@ WHERE Date = today()
 └────────────────────┘
 </div>
 <!-- -->
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusions">Conclusions<a href="https://rspamd.com/ru/blog/rspamd-performance#conclusions" class="hash-link" aria-label="Прямая ссылка на Conclusions" title="Прямая ссылка на Conclusions">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusions">Conclusions<a href="https://rspamd.com/docs.rspamd.com/branches/preview/ru/blog/rspamd-performance#conclusions" class="hash-link" aria-label="Прямая ссылка на Conclusions" title="Прямая ссылка на Conclusions">​</a></h2>
 <p>So with this load rate (<strong>1500 messages per second</strong>) and with the average size of messages around 2Kb, Rspamd processes each message in around <strong>100ms in average</strong>. I hope these numbers could give one some impression about Rspamd performance in general.</p>
 <p>I would like to give the main kudos to <a href="https://www.abusix.com/" target="_blank" rel="noopener noreferrer">Abusix</a> who are constantly supporting Rspamd project and have generously provided their amazing spam feeds to improve Rspamd quality!</p>]]></content>
         <author>
