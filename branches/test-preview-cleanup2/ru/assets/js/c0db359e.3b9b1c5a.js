@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[8454],{80909:e=>{e.exports=JSON.parse('{"metadata":{"permalink":"/docs.rspamd.com/branches/test-preview-cleanup2/ru/blog","page":1,"postsPerPage":5,"totalPages":1,"totalCount":1,"blogDescription":"News and updates from the Rspamd project","blogTitle":"Rspamd Blog"}}')}}]);
