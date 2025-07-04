@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[101],{91770:e=>{e.exports=JSON.parse('{"tags":[{"label":"performance","permalink":"/docs.rspamd.com/branches/preview1/ru/blog/tags/performance","count":1},{"label":"benchmarks","permalink":"/docs.rspamd.com/branches/preview1/ru/blog/tags/benchmarks","count":1}]}')}}]);
