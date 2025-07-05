@@ -36,8 +36,8 @@ jobs:
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
             // give Pages a head start
-            console.log('Waiting 60s before polling the Pages Build API…');
-            await new Promise(r => setTimeout(r, 60000));
+            //console.log('Waiting 60s before polling the Pages Build API…');
+            //await new Promise(r => setTimeout(r, 60000));
             // then poll up to ~3 minutes
             for (let i = 0; i < 18; i++) {
               const { data: build } = await github.rest.repos.getLatestPagesBuild({ owner, repo });
@@ -54,7 +54,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: '🔍 PR preview'
+          body-includes: 'PR preview'
 
       - name: Create or update comment with PR preview link
         uses: peter-evans/create-or-update-comment@v3
