@@ -1,4 +1,4 @@
-name: Deploy branch
+name: Branch preview
 
 on:
   push:
@@ -11,17 +11,34 @@ concurrency:
 
 jobs:
   preview:
-    name: "Preview: /branches/${{ github.ref_name }}/"
+    name: "Branch: /branches/${{ github.ref_name }}/"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check if branch is part of an open PR
+        uses: actions/github-script@v6
+        id: pr-check
+        with:
+          script: |
+            // derive branch name from the ref (e.g. "refs/heads/feature/foo")
+            const branch = context.ref.replace('refs/heads/', '');
+            const { owner, repo } = context.repo;
+            const { data: prs } = await github.rest.pulls.list({ owner, repo, head: `${owner}:${branch}`, state: 'open' });
+            core.setOutput('hasOpenPr', prs.length > 0);
+
+      - name: Skip if branch is part of an open PR
+        if: steps.pr-check.outputs.hasOpenPr == 'true'
+        run: |
+          echo "Branch is part of an open PR—skipping branch preview."
+          exit 0
 
       - name: Install dependencies & build
         run: |
           npm install
           npm run build
 
-      - name: Deploy preview to gh‑pages
+      - name: Deploy branch preview
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
@@ -31,4 +48,4 @@ jobs:
 
       - name: Add summary with preview link
         run: |
-          echo "🔍 [Site preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/branches/${{ github.ref_name }}/)" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 [Branch preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/branches/${{ github.ref_name }}/)" >> $GITHUB_STEP_SUMMARY
