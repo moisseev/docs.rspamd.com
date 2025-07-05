@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[8228],{49064:e=>{e.exports=JSON.parse('{"metadata":{"permalink":"/docs.rspamd.com/branches/1/merge/blog","page":1,"postsPerPage":5,"totalPages":1,"totalCount":1,"blogDescription":"News and updates from the Rspamd project","blogTitle":"Rspamd Blog"}}')}}]);
