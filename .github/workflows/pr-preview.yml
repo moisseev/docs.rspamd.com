@@ -29,24 +29,27 @@ jobs:
           target-folder: pr/${{ github.event.pull_request.number }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for Pages to become available
-        run: |
-          URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/"
-          echo "Waiting 60s before polling $URL …"
-          sleep 60
-          for i in {1..12}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-            if [ "$code" -eq 200 ]; then
-              echo "✅ Page is live!"
-              exit 0
-            fi
-            echo "…still ${code}, retrying in 10s ($i/12)"
-            sleep 10
-          done
-          echo "⚠️ Timed out waiting for $URL"
+      - name: Wait for GitHub Pages build to finish
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            // give Pages a head start
+            console.log('Waiting 60s before polling the Pages Build API…');
+            await new Promise(r => setTimeout(r, 60000));
+            // then poll up to ~3 minutes
+            for (let i = 0; i < 18; i++) {
+              const { data: build } = await github.rest.repos.getLatestPagesBuild({ owner, repo });
+              console.log(`Pages build status: ${build.status}`);
+              if (build.status === 'built') return '✅ built';
+              if (build.status === 'errored') throw new Error('❌ Pages build failed');
+              await new Promise(r => setTimeout(r, 10000)); // wait 10s between checks
+            }
+            throw new Error('⚠️ Timed out waiting for Pages build');
 
       - name: Comment with preview link
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
