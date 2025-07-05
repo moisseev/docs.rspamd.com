@@ -1,27 +1,50 @@
-name: Deploy branch
+name: Deploy Previews
 
 on:
   push:
     branches-ignore:
       - gh-pages
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 concurrency:
-  group: branch-preview-${{ github.ref_name }}
+  group: preview-${{ github.ref_name || github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  preview:
-    name: "Preview: /branches/${{ github.ref_name }}/"
+  branch-preview:
+    name: "Branch: /branches/${{ github.ref_name }}/"
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check if branch is part of an open PR
+        uses: actions/github-script@v6
+        id: pr-check
+        with:
+          script: |
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            const branch = process.env.GITHUB_REF_NAME;
+            const { data: prs } = await github.rest.pulls.list({
+              owner, repo,
+              head: `${owner}:${branch}`,
+              state: 'open',
+            });
+            core.setOutput('hasOpenPr', prs.length > 0);
+
+      - name: Skip if branch is part of an open PR
+        if: steps.pr-check.outputs.hasOpenPr == 'true'
+        run: |
+          echo "Branch is part of an open PR—skipping branch preview."
+          exit 0
 
       - name: Install dependencies & build
         run: |
           npm install
           npm run build
 
-      - name: Deploy preview to gh‑pages
+      - name: Deploy branch preview
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
@@ -31,4 +54,34 @@ jobs:
 
       - name: Add summary with preview link
         run: |
-          echo "🔍 [Site preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/branches/${{ github.ref_name }}/)" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 [Branch preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/branches/${{ github.ref_name }}/)" >> $GITHUB_STEP_SUMMARY
+
+  pr-preview:
+    name: "PR #${{ github.event.pull_request.number }}: /pr/${{ github.event.pull_request.number }}"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies & build
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy PR preview
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: build
+          clean: false
+          target-folder: pr/${{ github.event.pull_request.number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment with preview link
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            🔍 Preview for this PR:  
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/
