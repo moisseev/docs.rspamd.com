@@ -1,0 +1,67 @@
+name: PR preview
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-preview:
+    name: "path: /pr/${{ github.event.pull_request.number }}"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies & build
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy PR preview
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: build
+          clean: false
+          target-folder: pr/${{ github.event.pull_request.number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for GitHub Pages build to finish
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            // give Pages a head start
+            console.log('Waiting 60s before polling the Pages Build API…');
+            await new Promise(r => setTimeout(r, 60000));
+            // then poll up to ~3 minutes
+            for (let i = 0; i < 18; i++) {
+              const { data: build } = await github.rest.repos.getLatestPagesBuild({ owner, repo });
+              console.log(`Pages build status: ${build.status}`);
+              if (build.status === 'built') return 'built';
+              if (build.status === 'errored') throw new Error('Pages build failed');
+              await new Promise(r => setTimeout(r, 10000)); // wait 10s between checks
+            }
+            throw new Error('Timed out waiting for Pages build');
+
+      - name: Find existing PR preview comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🔍 PR preview'
+
+      - name: Create or update comment with PR preview link
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            🔍 [PR preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/)
