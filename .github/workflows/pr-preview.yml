@@ -29,39 +29,82 @@ jobs:
           target-folder: pr/${{ github.event.pull_request.number }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for GitHub Pages build to finish
-        uses: actions/github-script@v6
+      - name: Get latest gh-pages commit SHA
+        id: get_sha
+        uses: actions/github-script@v7
         with:
           result-encoding: string
           script: |
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-            // give Pages a head start
-            //console.log('Waiting 60s before polling the Pages Build API…');
-            //await new Promise(r => setTimeout(r, 60000));
-            // then poll up to ~3 minutes
-            for (let i = 0; i < 18; i++) {
-              const { data: build } = await github.rest.repos.getLatestPagesBuild({ owner, repo });
-              console.log(`Pages build status: ${build.status}`);
-              if (build.status === 'built') return 'built';
-              if (build.status === 'errored') throw new Error('Pages build failed');
-              await new Promise(r => setTimeout(r, 10000)); // wait 10s between checks
-            }
-            throw new Error('Timed out waiting for Pages build');
+            const result = await github.rest.repos.getBranch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'gh-pages',
+            });
+            return result.data.commit.sha;
 
-      - name: Find existing PR preview comment
-        uses: peter-evans/find-comment@v3
-        id: fc
+      - name: Wait for GitHub Pages deployment
+        id: wait_for_deploy
+        uses: actions/github-script@v7
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: 'PR preview'
+          script: |
+            const sha = '${{ steps.get_sha.outputs.result }}';
+            const maxRetries = 30;
+            const delay = ms => new Promise(res => setTimeout(res, ms));
 
-      - name: Create or update comment with PR preview link
+            // give Pages a head start
+            core.info('Waiting 60s before polling the Pages Build API…');
+            await delay(60000);
+
+            let deploymentId;
+
+            for (let i = 0; i < maxRetries; i++) {
+              const deployments = await github.rest.repos.listDeployments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha,
+                environment: 'github-pages',
+                per_page: 1,
+              });
+
+              if (deployments.data.length > 0) {
+                deploymentId = deployments.data[0].id;
+                break;
+              }
+
+              core.info('Waiting for deployment to appear...');
+              await delay(10000);
+            }
+
+            if (!deploymentId) {
+              core.setFailed('Timed out waiting for deployment to be created.');
+              return;
+            }
+
+            for (let i = 0; i < maxRetries; i++) {
+              const statuses = await github.rest.repos.listDeploymentStatuses({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deploymentId,
+              });
+
+              const state = statuses.data[0]?.state;
+              core.info(`Deployment status: ${state}`);
+
+              if (state === 'success') return;
+              if (state === 'error' || state === 'failure') {
+                core.setFailed(`Deployment failed with status: ${state}`);
+                return;
+              }
+
+              await delay(10000);
+            }
+
+            core.setFailed('Timed out waiting for deployment to complete.');
+
+      - name: Comment PR with preview link
+        if: success()
         uses: peter-evans/create-or-update-comment@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
           body: |
             🔍 [PR preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/)
