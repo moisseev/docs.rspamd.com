@@ -21,16 +21,19 @@ jobs:
           npm run build
 
       - name: Deploy PR preview
+        id: deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: build
           clean: false
+          single-commit: true
           target-folder: pr/${{ github.event.pull_request.number }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get latest gh-pages commit SHA
         id: get_sha
+        if: steps.deploy.outputs.deployment-status == 'success'
         uses: actions/github-script@v7
         with:
           result-encoding: string
@@ -44,6 +47,7 @@ jobs:
 
       - name: Wait for GitHub Pages deployment
         id: wait_for_deploy
+        if: steps.deploy.outputs.deployment-status == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -99,6 +103,7 @@ jobs:
             core.setFailed('Timed out waiting for deployment to complete.');
 
       - name: Delete previous PR preview link comments
+        if: steps.deploy.outputs.deployment-status == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -124,7 +129,7 @@ jobs:
             }
 
       - name: Comment PR with preview link
-        if: success()
+        if: steps.deploy.outputs.deployment-status == 'success'
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
