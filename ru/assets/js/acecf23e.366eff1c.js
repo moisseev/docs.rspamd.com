@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[1903],{1912:s=>{s.exports=JSON.parse('{"blogBasePath":"/ru/blog","blogTitle":"Rspamd Blog","authorsListPath":"/ru/blog/authors"}')}}]);
