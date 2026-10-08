@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[2888],{39768(s){s.exports=JSON.parse('{"metadata":{"permalink":"/docs.rspamd.com/branches/own-hostname/ru/blog","page":1,"postsPerPage":5,"totalPages":1,"totalCount":2,"blogDescription":"News and updates from the Rspamd project","blogTitle":"Rspamd Blog"}}')}}]);

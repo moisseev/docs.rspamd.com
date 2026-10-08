@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrspamd_docs=self.webpackChunkrspamd_docs||[]).push([[6976],{36976:(e,s,c)=>{c.d(s,{createPieServices:()=>a.f});var a=c(78187);c(99089)}}]);
